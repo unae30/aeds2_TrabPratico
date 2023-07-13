@@ -1,5 +1,9 @@
 # aeds2_TrabPratico
+
+Alunos: Unaê Tupinambás e Lê Alves
+
 PRIMEIRA ENTREGA:
+
 Considerando a aplicação escolhida para ser implementada, pede-se:
 1. Implemente as estruturas para representar as entidades que fazem parte da
 aplicação.
