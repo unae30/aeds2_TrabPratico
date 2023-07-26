@@ -132,7 +132,7 @@ TIng *buscaSequencial(int id, FILE *out, int *comparacao)
     }
     return NULL;
 }
-//parei aqui--------------------------------------------------------
+
 void insertion_sort_disco(FILE *out, int tam)
 {
     int i;
@@ -176,9 +176,6 @@ TIng *busca_binaria(int chave, FILE *in, int inicio, int fim)
     TIng *s = NULL;
     int cod = -1;
     int contador=0;
-
-
-
 
     while (inicio <= fim && cod != chave)
     {

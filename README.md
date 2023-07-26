@@ -17,3 +17,11 @@ bases.Realizar a marcação de tempo e contagem de comparações realizadas dura
 ordenação.
 5. Uma vez ordenadas, realize buscas binárias por entidades dentro das bases.
 Realizar a marcação de tempo e contagem de comparações realizadas em cada busca.
+
+
+SEGUNDA ENTREGA:
+
+1. Escolha e implemente um dos métodos de geração de partições ordenadas, sendo eles: 
+Seleção por substituição; Seleção natural. 
+2. Escolha e implemente um dos métodos de intercalação, sendo eles: 
+Árvore Binária de vencedores; Intercalação ótima;

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ingresso.c"
+#include "cliente.c"
 #include <time.h>
 
 // Declara um ponteiro para o arquivo que irá registrar o tempo
@@ -23,6 +24,64 @@ void salvarTempoGasto(double tempo)
 
 }
 
+//----------------------------------
+/*
+void  Inserir_clientes(FILE *out)
+{
+    int cont = 0;
+    int Clientes_desordenados[5000];
+    while(cont < 5000)
+    {
+        //rand - gera valores aleatorios
+        int num = rand();
+        int aux = 0;
+        for(int i = 0; i < cont; i++)
+        {
+            //confere resultado da função rand
+            if(Clientes_desordenados[i] == num)
+            {
+                aux = 1; //Se for igual recebe 1
+                break;
+            }
+        }
+        //se aux == 1, não entra no while
+        if(!aux)
+        {
+            Clientes_desordenados[cont] = num;
+            cont++;
+        }
+    }
+
+    //adicionar vetor de numeros do arquivo
+    TCliente * sh;
+    char text [4];
+    for(int i = 0; i < 5000; i++)
+    {
+        //char auxiliar = sprintf(text, "%d", i);
+        //char nome_proprio [] = {"nome_proprio"};
+        //strcat(nome_proprio,nome_proprio);
+
+        sh = cliente(Clientes_desordenados[i],"xxx", "cpf", "da/ta/nasc");
+        salva_cliente(sh, out);
+    }
+
+    free(sh);
+}
+
+void le_clientelas(FILE *in)
+{
+    printf("\n\nLendo clientelas do arquivo...\n\n");
+    rewind(in);
+    TCliente *sh;
+    while ((sh = le_cliente(in)) != NULL)
+    {
+        imprime_cliente(sh);
+        free(sh);
+    }
+}
+//-----------------------------------
+
+*/
 void  Inserir_ingressos(FILE *out)
 {
     int cont = 0;
@@ -51,9 +110,10 @@ void  Inserir_ingressos(FILE *out)
 
     //adicionar vetor de numeros do arquivo
     TIng * sh;
+    //TCliente * cl;
     for(int i = 0; i < 5000; i++)
     {
-        sh = ingresso(Ingressos_desordenados[i],"Y", "XXXXXXXXXXX", "ZZ/ZZ/ZZZZ", rand());
+        sh = ingresso(Ingressos_desordenados[i],"xxxx", "XXXXXXXXXXX", "ZZ/ZZ/ZZZZ", rand());
         salva(sh, out);
     }
 
@@ -74,13 +134,11 @@ void le_ingressos(FILE *in)
 
 int main()
 {
-
-
-
     //cria ponteiro para arq
     FILE *out;
     int chave;
     TIng *t;
+    //TCliente * c;
 
     //auxiliares
     int codigof, comparacao;
@@ -98,6 +156,23 @@ int main()
         Inserir_ingressos(out);
 
 
+        //int opcao;
+        //int aux=0;
+        //int menu;
+
+    /*
+    //Abre arquivo
+    if ((out = fopen("cliente.dat", "w+b")) == NULL)
+    {
+        printf("Erro ao abrir arquivo\n");
+        exit(1);
+    }
+    else
+    {
+        //insere ingressos no prog
+        Inserir_clientes(out);
+    }
+    */
         int opcao;
         int aux=0;
         int menu;
@@ -106,13 +181,14 @@ int main()
         printf("\nGERENCIAMENTO DE INGRESSOS\n");
 
 
-        while(menu != 4)
+        while(menu != 5)
         {
 
             printf("\n1 - Lista completa dos ingressos");
             printf("\n2 - Buscar algum ingresso - busca sequencial");
-            printf("\n3 - Buscar algum ingresso - busca binaria");
-            printf("\n4 - Sair do programa");
+            printf("\n3 - Inserction Sort");
+            printf("\n4 - Buscar algum ingresso - busca binaria");
+            printf("\n5 - Sair do programa");
             printf("\n");
             printf("\nDigite a opcao:");
             scanf("%d",&opcao);
@@ -123,6 +199,7 @@ int main()
                 printf("\n\n------------------------------LISTA DE INGRESSOS------------------------------n");
 
                 //LE OS INGRESSOS INSERIDOS
+                //le_clientelas(out);
                 le_ingressos(out);
                 break;
 
@@ -162,7 +239,8 @@ int main()
                 printf("\nTempo gasto no InsertionSort: %.5f segundos\n", tempoGasto);
                 //Salvar tempo gasto em um arquivo
                 salvarTempoGasto(tempoGasto);
-
+                break;
+            case 4:
                 //busca binaria
                 printf("\nOrdenado com sucesso! \n------------------------------Busca binaria:------------------------------\n");
                 printf("\n\nDigite o codgido do ingresso que deseja encontrar: ");
@@ -181,8 +259,8 @@ int main()
                 salvarTempoGasto(tempoGasto);
 
                 break;
-            case 4:
-                menu = 4;
+            case 5:
+                menu = 5;
                 break;
 
             default:
