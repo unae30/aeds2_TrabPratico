@@ -21,7 +21,7 @@ void imprime(TIng *ing)
     printf("\n");
 }
 
-// irá criar uum ingresso
+// irá criar um ingresso
 TIng *ingresso(int cod, char *nome, char *show, char *data_show, double preco)
 {
     TIng *ing = (TIng *)malloc(sizeof(TIng));
@@ -178,6 +178,8 @@ TIng *busca_binaria(int chave, FILE *in, int inicio, int fim)
     int contador=0;
 
 
+
+
     while (inicio <= fim && cod != chave)
     {
         int meio = trunc((inicio + fim) / 2);
@@ -208,3 +210,5 @@ TIng *busca_binaria(int chave, FILE *in, int inicio, int fim)
     }
     else return NULL;
 }
+
+

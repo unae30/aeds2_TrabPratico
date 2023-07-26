@@ -1,0 +1,3 @@
+0.01500 segundos
+41.89800 segundos
+0.00000 segundos

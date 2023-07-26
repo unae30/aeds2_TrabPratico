@@ -3,6 +3,26 @@
 #include "ingresso.c"
 #include <time.h>
 
+// Declara um ponteiro para o arquivo que irá registrar o tempo
+FILE *arquivoTempos = NULL;
+
+void salvarTempoGasto(double tempo)
+{
+    if (arquivoTempos == NULL)
+    {
+        // Abre o arquivo para escrita em modo "append" (adicionar ao final do arquivo)
+        if ((arquivoTempos = fopen("tempos.txt", "a")) == NULL)
+        {
+            printf("Erro ao abrir arquivo tempos.txt\n");
+            exit(1);
+        }
+    }
+
+    // Escreve o tempo gasto no arquivo
+    fprintf(arquivoTempos, "%.5f segundos\n", tempo);
+
+}
+
 void  Inserir_ingressos(FILE *out)
 {
     int cont = 0;
@@ -54,6 +74,9 @@ void le_ingressos(FILE *in)
 
 int main()
 {
+
+
+
     //cria ponteiro para arq
     FILE *out;
     int chave;
@@ -122,6 +145,9 @@ int main()
                     printf("\nIngresso encontrado: \n");
                     imprime(ingres);
                     printf("\nTempo gasto na busca sequencial: %.5f segundos\n", tempoGasto);
+                    //Salvar tempo gasto em um arquivo
+                    salvarTempoGasto(tempoGasto);
+
                 }
                 break;
 
@@ -134,6 +160,8 @@ int main()
                 tempoGasto = (double)(fim - comeco) / CLOCKS_PER_SEC;
                 imprime_arquivo(out);
                 printf("\nTempo gasto no InsertionSort: %.5f segundos\n", tempoGasto);
+                //Salvar tempo gasto em um arquivo
+                salvarTempoGasto(tempoGasto);
 
                 //busca binaria
                 printf("\nOrdenado com sucesso! \n------------------------------Busca binaria:------------------------------\n");
@@ -149,6 +177,8 @@ int main()
                 clock_t fimm = clock();
                 tempoGasto = (double)(fimm - comecoo) / CLOCKS_PER_SEC;
                 printf("\nTempo gasto no InsertionSort: %.5f segundos\n", tempoGasto);
+                //Salvar tempo gasto em um arquivo
+                salvarTempoGasto(tempoGasto);
 
                 break;
             case 4:
@@ -162,7 +192,8 @@ int main()
         }
         printf("\nPROGRAMA FINALIZADO.\n");
 
-        //fecha arquivo
+        //fecha arquivos
+        fclose(arquivoTempos);
         fclose(out);
         free(t);
     }

@@ -6,6 +6,7 @@
 #include <time.h>
 #include <string.h>
 
+
 typedef struct Ingresso
 {
   int cod;
@@ -45,5 +46,6 @@ void imprime_arquivo(FILE *out);
 
 //Faz busca binária
 TIng *busca_binaria(int chave, FILE *in, int inicio, int fim);
+
 
 #endif // INGRESSO_H_INCLUDED
