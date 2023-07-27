@@ -22,13 +22,13 @@ void imprime_cliente(TCliente *cliente);
 //Cria cliente.
 TCliente *cliente(int cod_id, char *nome, char *cpf, char *data_nasc);
 
-//Salva ingresso no out, na posicao atual do cursor
+//Salva cliente no out, na posicao atual do cursor
 void salva_cliente(TCliente *cliente, FILE *out);
 
-//Le ingresso do arquivo in, na posicao atual do cursor
+//Le cliente do arquivo in, na posicao atual do cursor
 TCliente *le_cliente(FILE *in);
 
-//Retorna tamanho do ingresso em bytes
+//Retorna tamanho do cliente em bytes
 int tamanho_cliente();
 
 //Retorna tamanho do arquivo

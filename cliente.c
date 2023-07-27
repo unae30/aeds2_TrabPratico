@@ -83,8 +83,7 @@ int tamanho_cliente()
     return sizeof(int)         // codigo
            + sizeof(char) * 50 // nome do comprador
            + sizeof(char) * 15 // cpf
-           + sizeof(char) * 11 // data de nascimento
-           + sizeof(double);   // valor do cliente
+           + sizeof(char) * 11; // data de nascimento
 }
 
 int tamanho_arquivo_cliente(FILE *arq)
