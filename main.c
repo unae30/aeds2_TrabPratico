@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "ingresso.c"
 #include "cliente.c"
+#include "particoes.h"
 #include <time.h>
 
 // Declara um ponteiro para o arquivo que irá registrar o tempo
@@ -109,8 +110,17 @@ int main()
     int codigof, comparacao;
     double tempoGasto = 0.0;
 
+
+    //classificação interna particoes
+    int nParticoes, nElementos;
+    Lista *nomes = NULL;
+    Lista *prox;
+    //tem que colocar exatamente igual ao numero de funcionarios, se nao vai da ruim
+    int nFunc=10;
+
+
     //Abre arquivo
-    if ((out = fopen("ingresso.dat", "w+b")) == NULL || (out1 = fopen("clientes.dat", "w+b")) ==NULL)
+    if ((out = fopen("ingresso.dat", "rb")) == NULL || (out1 = fopen("clientes.dat", "w+b")) ==NULL)
     {
         printf("Erro ao abrir arquivo\n");
         exit(1);
@@ -140,7 +150,8 @@ int main()
             printf("\n6 - Buscar algum cliente - busca sequencial");
             printf("\n7 - Inserction Sort cliente");
             printf("\n8 - Buscar algum cliente - busca binaria");
-            printf("\n9 - Sair do programa");
+            printf("\n9 - Iniciar particao de arquivo");
+            printf("\n10 - Sair do programa");
             printf("\n");
             printf("\nDigite a opcao:");
             scanf("%d",&opcao);
@@ -267,7 +278,38 @@ int main()
                 //Salvar tempo gasto em um arquivo
                 salvarTempoGasto(tempoGasto);
                 break;
+
             case 9:
+
+                //-----------------------------------PARTIÇÔES----------------------
+                printf("\nFAZENDO PARTICAO: ");
+
+
+                nParticoes = 10;
+                nElementos = 2;
+                printf("\n\nA estrutura de interpolacao tera 10 arquivos de no maximo 2 elementos\n");
+                nomes = cria("p1.dat", cria("p2.dat", cria("p3.dat", cria("p4.dat", cria("p5.dat", cria("p6.dat", cria("p7.dat", cria("p8.dat", cria("p9.dat", cria("p10.dat", NULL))))))))));
+                imprime(nomes);
+
+                //cria as particões que contém a base de dados de funcionários usando o método classificação interna
+                printf("\n\nGerando particoes, utilizando o metodo de classificacao interna.\n");
+                //salvando o ponteiro para o início da lista de nomes
+                prox = nomes;
+
+                clock_t beginn = clock();
+                particoes_selecao_substituicao(out, nomes, nElementos, nFunc);
+                imprime(nomes);
+                clock_t endd = clock();
+                tempoGasto = (double)(endd - beginn) / CLOCKS_PER_SEC;
+
+                printf("\n==================PARTIÇÃO FUNCIONOU===================================\n");
+
+                printf("\n==================================================================\n");
+
+
+
+
+            case 10:
                 menu = 9;
                 break;
             default:

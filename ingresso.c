@@ -1,4 +1,5 @@
 #include "ingresso.h"
+#include "particoes.c"
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -207,5 +208,60 @@ TIng *busca_binaria(int chave, FILE *in, int inicio, int fim)
     }
     else return NULL;
 }
+
+//-----------------------------PARTIÇÔES--------------------------------------------
+
+//Método por substituição
+void particoes_selecao_substituicao(FILE *in, Lista *nome_arquivos_saida, int M, int nIngr) {
+    rewind(in); // posiciona cursor no início do arquivo
+
+    int reg = 0;
+
+    while (reg < nIngr) {
+        TIng *v[M];
+        int i = 0;
+        while (!feof(in)) {
+            fseek(in, (reg) * tamanho(), SEEK_SET);
+            v[i] = le(in);
+            i++;
+            reg++;
+            if (i >= M) break;
+        }
+
+        // faz ordenação por seleção por substituição
+        for (int j = 0; j < M; j++) {
+            int pos_menor = j;
+            for (int k = j + 1; k < M; k++) {
+                if (v[k]->cod < v[pos_menor]->cod) {
+                    pos_menor = k;
+                }
+            }
+
+            TIng *temp = v[j];
+            v[j] = v[pos_menor];
+            v[pos_menor] = temp;
+        }
+
+        // cria arquivo de partição e faz gravação
+        char *nome_particao = nome_arquivos_saida->nome;
+        nome_arquivos_saida = nome_arquivos_saida->prox;
+        FILE *p;
+        if ((p = fopen(nome_particao, "wb+")) == NULL) {
+            printf("Erro ao criar arquivo de saída\n");
+        } else {
+            for (int i = 0; i < M; i++) {
+                fseek(p, (i) * tamanho(), SEEK_SET);
+                salva(v[i], p);
+                imprime(v[i]);
+            }
+            fclose(p);
+        }
+
+        for (int jj = 0; jj < M; jj++)
+            free(v[jj]);
+    }
+}
+
+
 
 
