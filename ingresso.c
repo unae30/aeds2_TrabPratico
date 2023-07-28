@@ -262,6 +262,60 @@ void particoes_selecao_substituicao(FILE *in, Lista *nome_arquivos_saida, int M,
     }
 }
 
+//----------------INTERCALAÇÃO-------------------------------------------------------------
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Função de intercalação ótima
+void intercalacao_otima(Lista *nomes, int nParticoes, FILE *saida) {
+    FILE **particoes = (FILE **)malloc(nParticoes * sizeof(FILE *));
+    TIng **registros = (TIng **)malloc(nParticoes * sizeof(TIng *));
+
+    // Abre os arquivos das partições e carrega o primeiro registro de cada uma
+    int i;
+    for (i = 0; i < nParticoes; i++) {
+        particoes[i] = fopen(nomes->nome, "rb");
+        registros[i] = le(particoes[i]);
+        nomes = nomes->prox;
+    }
+
+    // Realiza a intercalação ótima
+    while (1) {
+        int menor = -1;
+        TIng *menorRegistro = NULL;
+
+        // Encontra o menor registro entre os registros atuais de todas as partições
+        for (i = 0; i < nParticoes; i++) {
+            if (registros[i]) {
+                if (menor == -1 || registros[i]->cod < menorRegistro->cod) {
+                    menor = i;
+                    menorRegistro = registros[i];
+                }
+            }
+        }
+
+        if (menor == -1) {
+            // Não há mais registros em nenhuma partição, intercalação finalizada
+            break;
+        }
+
+        // Escreve o menor registro no arquivo de saída
+        salva(menorRegistro, saida);
+
+        // Lê o próximo registro da partição cujo registro foi escolhido
+        registros[menor] = le(particoes[menor]);
+    }
+
+    // Fecha todos os arquivos das partições
+    for (i = 0; i < nParticoes; i++) {
+        fclose(particoes[i]);
+    }
+
+    // Libera a memória alocada
+    free(particoes);
+    free(registros);
+}
 
 
 

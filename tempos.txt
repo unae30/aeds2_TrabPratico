@@ -7,3 +7,6 @@
 0.01500 segundos
 0.01500 segundos
 0.01600 segundos
+0.00000 segundos
+50.19800 segundos
+0.00000 segundos

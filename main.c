@@ -120,7 +120,7 @@ int main()
 
 
     //Abre arquivo
-    if ((out = fopen("ingresso.dat", "rb")) == NULL || (out1 = fopen("clientes.dat", "w+b")) ==NULL)
+    if ((out = fopen("ingresso.dat", "w+b")) == NULL || (out1 = fopen("clientes.dat", "w+b")) ==NULL)
     {
         printf("Erro ao abrir arquivo\n");
         exit(1);
@@ -304,7 +304,22 @@ int main()
 
                 printf("\n==================PARTIÇÃO FUNCIONOU===================================\n");
 
-                printf("\n==================================================================\n");
+
+                // Realizar intercalação ótima das partições
+                printf("\nRealizando intercalacao otima das particoes...\n");
+                clock_t intercalacao_begin = clock();
+                FILE *saida_final = fopen("arquivo_ordenado.dat", "wb");
+                intercalacao_otima(nomes, nParticoes, saida_final);
+                fclose(saida_final);
+                clock_t intercalacao_end = clock();
+                tempoGasto = (double)(intercalacao_end - intercalacao_begin) / CLOCKS_PER_SEC;
+                printf("\nTempo gasto na intercalacao otima: %.5f segundos\n", tempoGasto);
+                //Salvar tempo gasto em um arquivo
+                salvarTempoGasto(tempoGasto);
+
+
+
+                printf("\n=============================INTERCALACAO FUNCIONOU=====================================\n");
 
 
 
