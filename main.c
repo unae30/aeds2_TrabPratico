@@ -115,9 +115,7 @@ int main()
     int nParticoes, nElementos;
     Lista *nomes = NULL;
     Lista *prox;
-    //tem que colocar exatamente igual ao numero de funcionarios, se nao vai da ruim
-    int nFunc=10;
-
+    int nIng=5000;
 
     //Abre arquivo
     if ((out = fopen("ingresso.dat", "w+b")) == NULL || (out1 = fopen("clientes.dat", "w+b")) ==NULL)
@@ -282,31 +280,32 @@ int main()
             case 9:
 
                 //-----------------------------------PARTIÇÔES----------------------
-                printf("\nFAZENDO PARTICAO: ");
+                printf("\nFazendo particao: ");
 
 
                 nParticoes = 10;
-                nElementos = 2;
-                printf("\n\nA estrutura de interpolacao tera 10 arquivos de no maximo 2 elementos\n");
+                nElementos = 500;
+                printf("\n\n Gerará 10 arquivos de no máximo 500 elementos (ingressos)\n");
                 nomes = cria("p1.dat", cria("p2.dat", cria("p3.dat", cria("p4.dat", cria("p5.dat", cria("p6.dat", cria("p7.dat", cria("p8.dat", cria("p9.dat", cria("p10.dat", NULL))))))))));
                 imprime(nomes);
 
-                //cria as particões que contém a base de dados de funcionários usando o método classificação interna
+                //cria as particões que contém a base de dados de ingressos usando o método classificação interna
                 printf("\n\nGerando particoes, utilizando o metodo de classificacao interna.\n");
-                //salvando o ponteiro para o início da lista de nomes
+                //salvando o ponteiro para o início da lista de ingressos
                 prox = nomes;
 
                 clock_t beginn = clock();
-                particoes_selecao_substituicao(out, nomes, nElementos, nFunc);
+                particoes_selecao_substituicao(out, nomes, nElementos, nIng);
                 imprime(nomes);
+
                 clock_t endd = clock();
                 tempoGasto = (double)(endd - beginn) / CLOCKS_PER_SEC;
 
-                printf("\n==================PARTIÇÃO FUNCIONOU===================================\n");
+                printf("\n-------------------------------- Particao concluida --------------------------------\n");
 
 
-                // Realizar intercalação ótima das partições
-                printf("\nRealizando intercalacao otima das particoes...\n");
+                // Intercalação ótima
+                printf("\nIntercalacao otima das particoes em andamento...\n");
                 clock_t intercalacao_begin = clock();
                 FILE *saida_final = fopen("arquivo_ordenado.dat", "wb");
                 intercalacao_otima(nomes, nParticoes, saida_final);
@@ -319,10 +318,7 @@ int main()
 
 
 
-                printf("\n=============================INTERCALACAO FUNCIONOU=====================================\n");
-
-
-
+                printf("\n-------------------------------- Intercalacao concluida --------------------------------\n");
 
             case 10:
                 menu = 9;
