@@ -16,6 +16,13 @@ typedef struct Ingresso
   double preco;
 } TIng;
 
+//estrutura para armazenar o vetor de particoes
+typedef struct vetor{
+    TFunc *func;
+    int aux_p;
+    FILE *f;
+}TVet;
+
 
 //Imprime ingresso
 void imprime(TIng *ing);
@@ -46,6 +53,11 @@ void imprime_arquivo(FILE *out);
 
 //Faz busca binária
 TIng *busca_binaria(int chave, FILE *in, int inicio, int fim);
+
+
+void classificacaoInterna(FILE *in, int M);
+
+void intercalacao_basico(FILE *out, int num_p);
 
 
 #endif // INGRESSO_H_INCLUDED

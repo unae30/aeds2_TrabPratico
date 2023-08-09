@@ -5,6 +5,7 @@
 #include "particoes.h"
 #include <time.h>
 
+
 // Declara um ponteiro para o arquivo que irá registrar o tempo
 FILE *arquivoTempos = NULL;
 
@@ -279,7 +280,7 @@ int main()
 
             case 9:
 
-                //-----------------------------------PARTIÇÔES----------------------
+                /*-----------------------------------PARTIÇÔES----------------------
                 printf("\nFazendo particao: ");
 
 
@@ -295,6 +296,7 @@ int main()
                 prox = nomes;
 
                 clock_t beginn = clock();
+
                 particoes_selecao_substituicao(out, nomes, nElementos, nIng);
                 imprime(nomes);
 
@@ -318,7 +320,7 @@ int main()
 
 
 
-                printf("\n-------------------------------- Intercalacao concluida --------------------------------\n");
+                printf("\n-------------------------------- Intercalacao concluida --------------------------------\n");*/
 
             case 10:
                 menu = 9;
