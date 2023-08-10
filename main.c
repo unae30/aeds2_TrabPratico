@@ -138,7 +138,7 @@ int main()
         printf("\nGERENCIAMENTO DE INGRESSOS e CLIENTES\n");
 
 
-        while(menu != 9)
+        while(menu != 10)
         {
 
             printf("\n1 - Lista completa dos ingressos");
@@ -149,8 +149,9 @@ int main()
             printf("\n6 - Buscar algum cliente - busca sequencial");
             printf("\n7 - Inserction Sort cliente");
             printf("\n8 - Buscar algum cliente - busca binaria");
-            printf("\n9 - Iniciar particao de arquivo");
-            printf("\n10 - Sair do programa");
+            printf("\n9 - Particionar Ordenada Selecao Substituicao");
+            printf("\n10 - Executar Intercalacao otima");
+            printf("\n11 - Sair do programa");
             printf("\n");
             printf("\nDigite a opcao:");
             scanf("%d",&opcao);
@@ -263,7 +264,7 @@ int main()
                 break;
             case 8:
                 //busca binaria
-                printf("\nOrdenado com sucesso! \n------------------------------Busca binaria:------------------------------\n");
+                printf("\n\n------------------------------Busca binaria:------------------------------\n");
                 printf("\n\nDigite o codgido do cliente que deseja encontrar: ");
                 fflush(stdin);
                 scanf("%d", &chave);
@@ -280,50 +281,18 @@ int main()
 
             case 9:
 
-                /*-----------------------------------PARTIÇÔES----------------------
-                printf("\nFazendo particao: ");
+                /*-----------------------------------PARTIÇÔES----------------------*/
+                gerarParticoesOrdenadas("ingresso.dat");
+                printf("\nParticoes realizadas com sucesso.\n");
 
-
-                nParticoes = 10;
-                nElementos = 500;
-                printf("\n\n Gerará 10 arquivos de no máximo 500 elementos (ingressos)\n");
-                nomes = cria("p1.dat", cria("p2.dat", cria("p3.dat", cria("p4.dat", cria("p5.dat", cria("p6.dat", cria("p7.dat", cria("p8.dat", cria("p9.dat", cria("p10.dat", NULL))))))))));
-                imprime(nomes);
-
-                //cria as particões que contém a base de dados de ingressos usando o método classificação interna
-                printf("\n\nGerando particoes, utilizando o metodo de classificacao interna.\n");
-                //salvando o ponteiro para o início da lista de ingressos
-                prox = nomes;
-
-                clock_t beginn = clock();
-
-                particoes_selecao_substituicao(out, nomes, nElementos, nIng);
-                imprime(nomes);
-
-                clock_t endd = clock();
-                tempoGasto = (double)(endd - beginn) / CLOCKS_PER_SEC;
-
-                printf("\n-------------------------------- Particao concluida --------------------------------\n");
-
-
-                // Intercalação ótima
-                printf("\nIntercalacao otima das particoes em andamento...\n");
-                clock_t intercalacao_begin = clock();
-                FILE *saida_final = fopen("arquivo_ordenado.dat", "wb");
-                intercalacao_otima(nomes, nParticoes, saida_final);
-                fclose(saida_final);
-                clock_t intercalacao_end = clock();
-                tempoGasto = (double)(intercalacao_end - intercalacao_begin) / CLOCKS_PER_SEC;
-                printf("\nTempo gasto na intercalacao otima: %.5f segundos\n", tempoGasto);
-                //Salvar tempo gasto em um arquivo
-                salvarTempoGasto(tempoGasto);
-
-
-
-                printf("\n-------------------------------- Intercalacao concluida --------------------------------\n");*/
-
+                break;
             case 10:
-                menu = 9;
+                /*-----------------------------------INTERCALAÇOES----------------------*/
+                intercalacao_otima();
+                printf("\nIntercalacao otima realizada com sucesso.\n");
+                break;
+            case 11:
+                menu = 10;
                 break;
             default:
                 printf("Opcao invalida. Tente novamente.\n");
@@ -335,6 +304,7 @@ int main()
         //fecha arquivos
         fclose(arquivoTempos);
         fclose(out);
+        fclose(out1);
         free(t);
     }
 }

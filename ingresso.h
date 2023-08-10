@@ -18,7 +18,7 @@ typedef struct Ingresso
 
 //estrutura para armazenar o vetor de particoes
 typedef struct vetor{
-    TFunc *func;
+    TIng *ing;
     int aux_p;
     FILE *f;
 }TVet;
@@ -59,5 +59,14 @@ void classificacaoInterna(FILE *in, int M);
 
 void intercalacao_basico(FILE *out, int num_p);
 
+void gerarParticoesOrdenadas(const char *nomeArquivo);
 
+void intercalacao_otima();
+
+int compare(const void *a, const void *b);
+// Função para ler um ingresso do arquivo
+int lerIngresso(FILE *arquivo, TIng *ingresso);
+
+// Função para escrever um ingresso no arquivo
+void escreverIngresso(FILE *arquivo, TIng *ingresso);
 #endif // INGRESSO_H_INCLUDED

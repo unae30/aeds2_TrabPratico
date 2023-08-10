@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
+#include <dirent.h>
 
 //Imprime ingresso
 void imprime(TIng *ing)
@@ -212,352 +213,153 @@ TIng *busca_binaria(int chave, FILE *in, int inicio, int fim)
 
 //-----------------------------PARTIÇÔES--------------------------------------------
 
+#define TAM_MAX 100
+#define F 49 // Defina o número máximo de partições aqui
 
-void classificacaoInterna(FILE *arq, int M) {
-
-    rewind(arq); //posiciona cursor no inicio do arquivo
-
-
-    int reg = 0;
-    int nIng = tamanho_arquivo(arq); nIng
-    int tamanho_arquivo = 0;
-    int t = tamanho();
-    char nome[10];
-    char numero[5];
-    char extensao[5];
-
-        //itoa(qtdParticoes(tamanho_arquivo),numero,10);
-
-    while (reg != nIng) {
-        //le o arquivo e coloca no vetor
-        TIng *v[M];
-        int i = 0;
-        while (!feof(arq)) {
-            fseek(arq, (reg) * tamanho(), SEEK_SET);
-            v[i] = le(arq);
-       //     imprime_funcionario(v[i]);
-            i++;
-            reg++;
-            if(i>=M) break;
-        }
-
-        //ajusta tamanho M caso arquivo de entrada tenha terminado antes do vetor
-        if (i != M) {
-            M = i;
-        }
-
-        //faz ordenacao
-        for (int j = 1; j < M; j++) {
-            TIng *f = v[j];
-            i = j - 1;
-            while ((i >= 0) && (v[i]->cod > f->cod)) {
-                v[i + 1] = v[i];
-                i = i - 1;
-            }
-            v[i + 1] = f;
-        }
-
-        //cria arquivo de particao e faz gravacao
-        printf("\n\nParticao %d",qtdParticoes);
-        strcpy(nome,"particao");
-        strcpy(extensao,".dat");
-        itoa(qtdParticoes,numero,10);
-        strcat(nome,numero);
-        strcat(nome,extensao);
-
-        //printf("\n%s\n", nome);
-
-        FILE *p;
-
-        if ((p = fopen(nome, "wb+")) == NULL) {
-            printf("Erro criar arquivo de saida\n");
-        } else {
-            for (int i = 0; i < M; i++) {
-                fseek(p, (i) * tamanho(), SEEK_SET);
-                salva(v[i], p);
-                imprime(v[i]);
-            }
-            fclose(p);
-            qtdParticoes++;
-        }
-        for(int jj = 0; jj<M; jj++)
-            free(v[jj]);
-    }
-    //nParticoes = qtdParticoes;
+// Função de comparação para o qsort
+int compare(const void *a, const void *b)
+{
+    return ((TIng *)a)->cod - ((TIng *)b)->cod;
 }
 
-
-void intercalacao_basico(FILE *out, int num_p) {
-
-    char nome[10];
-    char numero[5];
-    char extensao[5];
-
-                    //criando pilha com o conteudo das particoes geradas
-                    TPilha **vetPilhas;
-                    vetPilhas = (TPilha **) malloc(sizeof(TPilha *) * (num_p));
-                    int *vetTopo;
-                    vetTopo = (int *) malloc(sizeof(int) * (num_p));
-
-                    for(int p = 0 ; p < num_p ; p++){
-                        //alocando a memÃ³ria para salvar uma pilha para cada particao
-                        vetPilhas[p] = (TPilha *) malloc(sizeof(TPilha) * (8));
-                        //abrindo primeira partiÃ§Ã£o para leitura
-                        strcpy(nome,"particao");
-                        strcpy(extensao,".dat");
-                        itoa(p,numero,10);
-                        strcat(nome,numero);
-                        strcat(nome,extensao);
-                        FILE *part = fopen(nome, "rb+");
-                        //printf("%s \n", "Particao 0");
-                        //nomes = nomes->prox;
-                        //imprimindo os funcionÃ¡rios gravados nas partiÃ§Ãµes
-                        //imprimirBase(part);
-                        //inicializando os topos das pilhas
-                        vetTopo[p] = -1;
-                        //criando pilha atravÃ©s da leitura da partiÃ§Ã£o
-                        cria_pilha_particao(vetPilhas[p], part, 8, &vetTopo[p]);
-                        //fechando a partiÃ§Ã£o
-                        fclose(part);
-                    }
-                    //crioupilhas = 1;
-                    //nomes = prox;
-
-    int fim = 0; //variavel que controla fim do procedimento
-
-
-
-        //cria vetor de particoes
-        TVet v[num_p];
-
-        //abre arquivos das particoes, colocando variavel de arquivo no campo f do vetor
-        //e primeiro funcionario do arquivo no campo func do vetor
-        for (int i=0; i < num_p; i++) {
-            strcpy(nome,"particao");
-            strcpy(extensao,".dat");
-            itoa(i,numero,10);
-            strcat(nome,numero);
-            strcat(nome,extensao);
-
-            //printf("%s",nome);
-
-            v[i].f = fopen(nome, "rb");
-            v[i].aux_p = 0;
-
-            if (v[i].f != NULL) {
-                fseek(v[i].f, v[i].aux_p * tamanho(), SEEK_SET);
-                TIng *f = le(v[i].f);
-                if (f == NULL) {
-                    //arquivo estava vazio
-                    //coloca HIGH VALUE nessa posi??o do vetor
-                    v[i].ing = ingresso(INT_MAX, "","","",0);
-                }
-                else {
-                    //conseguiu ler funcionario, coloca na posi??o atual do vetor
-                    v[i].ing = f;
-                }
-            }
-            else {
-                fim = 1;
-            }
-            //nome_particoes = nome_particoes->prox;
-        }
-
-        int aux = 0;
-        while (!(fim)) { //conseguiu abrir todos os arquivos
-            int menor = INT_MAX;
-            int pos_menor;
-            //encontra o funcionario com menor chave no vetor
-            for(int i = 0; i < num_p; i++){
-                if(v[i].ing->cod < menor){
-                    menor = v[i].ing->cod;
-                    pos_menor = i;
-                }
-            }
-            if (menor == INT_MAX) {
-                fim = 1; //terminou processamento
-            }
-            else {
-                //salva funcionario no arquivo de saÃ­da
-                fseek(out, aux * tamanho(), SEEK_SET);
-                salva(v[pos_menor].ing, out);
-                //printf("%d ",pos_menor);
-                //atualiza posiÃ§Ã£o pos_menor do vetor com pr?ximo funcionario do arquivo
-                v[pos_menor].aux_p++;
-                fseek(v[pos_menor].f, v[pos_menor].aux_p * tamanho(), SEEK_SET);
-                TFunc *f = le(v[pos_menor].f);
-                aux++;
-                if (f == NULL) {
-                    //arquivo estava vazio
-                    //coloca HIGH VALUE nessa posiÃ§ao do vetor
-                    v[pos_menor].ing = ingresso(INT_MAX, "", "", "",0.0);
-                }
-                else {
-                    v[pos_menor].ing = f;
-                }
-
-            }
-        }
-
-        //fecha arquivos das partiÃ‡Ãµes de entrada
-        for(int i = 0; i < num_p; i++){
-            fclose(v[i].f);
-        //    free(v[i].ing);
-        }
-        //fecha arquivo de saÃ­da
-        //fclose(out);
-
+// Função para ler um ingresso do arquivo
+int lerIngresso(FILE *arquivo, TIng *ingresso)
+{
+    return fread(ingresso, sizeof(TIng), 1, arquivo);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-//Método por substituição
-void particoes_selecao_substituicao(FILE *in, Lista *nome_arquivos_saida, int M, int nIngr) {
-    rewind(in); // posiciona cursor no início do arquivo
-
-    int reg = 0;
-
-    while (reg < nIngr) {
-        TIng *v[M];
-        int i = 0;
-        while (!feof(in)) {
-            fseek(in, (reg) * tamanho(), SEEK_SET);
-            v[i] = le(in);
-            i++;
-            reg++;
-            if (i >= M) break;
-        }
-
-        // faz ordenação por seleção por substituição
-        for (int j = 0; j < M; j++) {
-            int pos_menor = j;
-            for (int k = j + 1; k < M; k++) {
-                if (v[k]->cod < v[pos_menor]->cod) {
-                    pos_menor = k;
-                }
-            }
-
-            TIng *temp = v[j];
-            v[j] = v[pos_menor];
-            v[pos_menor] = temp;
-        }
-
-        // cria arquivo de partição e faz gravação
-        char *nome_particao = nome_arquivos_saida->nome;
-        nome_arquivos_saida = nome_arquivos_saida->prox;
-        FILE *p;
-        if ((p = fopen(nome_particao, "wb+")) == NULL) {
-            printf("Erro ao criar arquivo de saída\n");
-        } else {
-            for (int i = 0; i < M; i++) {
-                fseek(p, (i) * tamanho(), SEEK_SET);
-                salva(v[i], p);
-                imprime(v[i]);
-            }
-            fclose(p);
-        }
-
-        for (int jj = 0; jj < M; jj++)
-            free(v[jj]);
-    }
+// Função para escrever um ingresso no arquivo
+void escreverIngresso(FILE *arquivo, TIng *ingresso)
+{
+    fwrite(ingresso, sizeof(TIng), 1, arquivo);
 }
 
-//----------------INTERCALAÇÃO-------------------------------------------------------------
+// Função para gerar partições ordenadas por seleção por substituição
+void gerarParticoesOrdenadas(const char *nomeArquivo)
+{
+    FILE *arquivo = fopen(nomeArquivo, "rb");
 
-#include <stdio.h>
-#include <stdlib.h>
-
-// Função de intercalação ótima
-void intercalacao_otima(Lista *nomes, int nParticoes, FILE *saida) {
-    FILE **particoes = (FILE **)malloc(nParticoes * sizeof(FILE *));
-    TIng **registros = (TIng **)malloc(nParticoes * sizeof(TIng *));
-
-    // Abre os arquivos das partições e carrega o primeiro registro de cada uma
-    int i;
-    for (i = 0; i < nParticoes; i++) {
-        particoes[i] = fopen(nomes->nome, "rb");
-        registros[i] = le(particoes[i]);
-        nomes = nomes->prox;
+    if (arquivo == NULL)
+    {
+        perror("Erro ao abrir o arquivo");
+        exit(1);
     }
 
-    // Realiza a intercalação ótima
-    while (1) {
-        int menor = -1;
-        TIng *menorRegistro = NULL;
+    int numParticao = 0;
+    TIng buffer[TAM_MAX];
+    int tamBuffer = 0;
 
-        // Encontra o menor registro entre os registros atuais de todas as partições
-        for (i = 0; i < nParticoes; i++) {
-            if (registros[i]) {
-                if (menor == -1 || registros[i]->cod < menorRegistro->cod) {
-                    menor = i;
-                    menorRegistro = registros[i];
+    while (1)
+    {
+        int lidos = lerIngresso(arquivo, &buffer[tamBuffer]);
+        if (lidos == 0)
+        {
+            if (tamBuffer > 0)
+            {
+                // Ordenar e escrever a partição final
+                qsort(buffer, tamBuffer, sizeof(TIng), compare);
+
+                char nomeParticao[20];
+                snprintf(nomeParticao, sizeof(nomeParticao), "particao%d.dat", numParticao);
+
+                FILE *particao = fopen(nomeParticao, "wb");
+                for (int i = 0; i < tamBuffer; i++)
+                {
+                    escreverIngresso(particao, &buffer[i]);
                 }
+                fclose(particao);
+
+                numParticao++;
+            }
+            break; // Fim do arquivo
+        }
+
+        tamBuffer++;
+        if (tamBuffer == TAM_MAX)
+        {
+            // Ordenar e escrever a partição atual
+            qsort(buffer, tamBuffer, sizeof(TIng), compare);
+
+            char nomeParticao[20];
+            snprintf(nomeParticao, sizeof(nomeParticao), "particao%d.dat", numParticao);
+
+            FILE *particao = fopen(nomeParticao, "wb");
+            for (int i = 0; i < tamBuffer; i++)
+            {
+                escreverIngresso(particao, &buffer[i]);
+            }
+            fclose(particao);
+
+            numParticao++;
+            tamBuffer = 0;
+        }
+    }
+
+    fclose(arquivo);
+}
+
+void intercalacao_otima() {
+    FILE *particoes[F];
+    char nomeParticao[F][20];
+    TIng buffer[F][TAM_MAX];
+    int tamBuffer[F] = {0};
+
+    // Abrir as partições iniciais
+    for (int i = 0; i < F; i++) {
+        snprintf(nomeParticao[i], sizeof(nomeParticao[i]), "particao%d.dat", i);
+        particoes[i] = fopen(nomeParticao[i], "rb");
+        if (particoes[i] == NULL) {
+            perror("Erro ao abrir partição");
+            exit(1);
+        }
+
+        tamBuffer[i] = fread(buffer[i], sizeof(TIng), TAM_MAX, particoes[i]);
+        qsort(buffer[i], tamBuffer[i], sizeof(TIng), compare);
+    }
+
+    char nomeSaida[] = "saida.dat";
+    FILE *saida = fopen(nomeSaida, "wb");
+    if (saida == NULL) {
+        perror("Erro ao criar arquivo de saída");
+        exit(1);
+    }
+
+    int numParticao = F;
+
+    while (numParticao > 0) {
+        TIng menorValor = buffer[0][0];
+        int indiceMenor = 0;
+
+        for (int i = 1; i < F; i++) {
+            if (tamBuffer[i] > 0 && compare(&buffer[i][0], &menorValor) < 0) {
+                menorValor = buffer[i][0];
+                indiceMenor = i;
             }
         }
 
-        if (menor == -1) {
-            // Não há mais registros em nenhuma partição, intercalação finalizada
-            break;
+        int numEscritos = fwrite(&menorValor, sizeof(TIng), 1, saida);
+        if (numEscritos < 1) {
+            perror("Erro ao escrever arquivo de saída");
+            exit(1);
         }
 
-        // Escreve o menor registro no arquivo de saída
-        salva(menorRegistro, saida);
+        tamBuffer[indiceMenor]--;
+        memmove(&buffer[indiceMenor][0], &buffer[indiceMenor][1], tamBuffer[indiceMenor] * sizeof(TIng));
 
-        // Lê o próximo registro da partição cujo registro foi escolhido
-        registros[menor] = le(particoes[menor]);
+        if (tamBuffer[indiceMenor] == 0) {
+            fclose(particoes[indiceMenor]);
+            numParticao--;
+            for (int j = indiceMenor; j < F - 1; j++) {
+                particoes[j] = particoes[j + 1];
+                memcpy(buffer[j], buffer[j + 1], TAM_MAX * sizeof(TIng));
+                tamBuffer[j] = tamBuffer[j + 1];
+            }
+        }
     }
 
-    // Fecha todos os arquivos das partições
-    for (i = 0; i < nParticoes; i++) {
-        fclose(particoes[i]);
+    fclose(saida);
+
+    for (int i = 0; i < F; i++) {
+        remove(nomeParticao[i]);
     }
-
-    // Libera a memória alocada
-    free(particoes);
-    free(registros);
-}*/
-
-
-
+}
