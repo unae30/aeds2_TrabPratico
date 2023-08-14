@@ -1,5 +1,5 @@
 Trabalho prático de Algorítmos e Estruturas de Dados II - UFOP
-Alunos: Lê Alves e Unaê
+\r\nAlunos: Lê Alves e Unaê
 
 Entrega 1:
 Considerando a aplicação escolhida para ser implementada, pede-se:
