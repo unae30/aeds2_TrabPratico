@@ -59,12 +59,6 @@ void imprime_arquivo(FILE *out);
 //Faz busca binária
 TIng *busca_binaria(int chave, FILE *in, int inicio, int fim);
 
-
-void classificacaoInterna(FILE *in, int M);
-
-void intercalacao_basico(FILE *out, int num_p);
-
-
 int compare(const void *a, const void *b);
 // Função para ler um ingresso do arquivo
 int lerIngresso(FILE *arquivo, TIng *ingresso);
@@ -72,13 +66,11 @@ int lerIngresso(FILE *arquivo, TIng *ingresso);
 // Função para escrever um ingresso no arquivo
 void escreverIngresso(FILE *arquivo, TIng *ingresso);
 
-int naturalSelection(FILE *file, char nameFilePartition[]);
 void saveRegisterIngresso(TIng *ing, FILE *out);
 TIng *readRegisterIngresso(FILE *out);
 void printPartitionEmployeeID(FILE *file, char partitionName[]);
-void binaryTreeOfWinners(int numberOfPartition, char nameFilePartition[]);
-void treeWinner(TIng **ing, FILE *file, int sizeInTreeOfWinners, int *auxTreeWinner);
 void mergeSort(int numberOfPartition, char nameFilePartition[]);
 int substitutionSelection (FILE *file, char nameFilePartition[]);
 int allVetFrozen (int vet[]);
+
 #endif // INGRESSO_H_INCLUDED

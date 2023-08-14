@@ -279,14 +279,6 @@ int main()
                 break;
 
             case 9:
-                /*
-                                int numberOfPartition = 1;
-                numeroDeParticao += naturalSelection(out,"naturalSelectionPartition");
-                binaryTreeOfWinners(numeroDeParticao, "naturalSelectionPartition");
-                FILE *fileBinaryOfTreeSorted = fopen("binaryOfTreeFileSorted.dat","rb+");
-                printPartitionEmployeeID(fileBinaryOfTreeSorted, "binaryOfTreeFileSorted.dat");
-                fclose(fileBinaryOfTreeSorted);
-                */
                 // int numberOfPartition = 0;
                 numeroDeParticao = substitutionSelection(out, "substitutionSelectionPartition");
                 mergeSort(numeroDeParticao, "substitutionSelectionPartition");
