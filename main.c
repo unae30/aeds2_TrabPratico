@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "ingresso.c"
 #include "cliente.c"
-#include "particoes.h"
 #include <time.h>
 
 
@@ -114,8 +113,8 @@ int main()
 
     //classificação interna particoes
     int nParticoes, nElementos;
-    Lista *nomes = NULL;
-    Lista *prox;
+    //Lista *nomes = NULL;
+    //Lista *prox;
     int nIng=5000;
 
     //Abre arquivo
@@ -138,7 +137,7 @@ int main()
         printf("\nGERENCIAMENTO DE INGRESSOS e CLIENTES\n");
 
 
-        while(menu != 10)
+        while(menu != 9)
         {
 
             printf("\n1 - Lista completa dos ingressos");
@@ -149,13 +148,13 @@ int main()
             printf("\n6 - Buscar algum cliente - busca sequencial");
             printf("\n7 - Inserction Sort cliente");
             printf("\n8 - Buscar algum cliente - busca binaria");
-            printf("\n9 - Particionar Ordenada Selecao Substituicao");
-            printf("\n10 - Executar Intercalacao otima");
-            printf("\n11 - Sair do programa");
+            printf("\n9 - Selecao natural e arvore bin de 3 venc");
+            printf("\n10 - Sair do programa");
             printf("\n");
             printf("\nDigite a opcao:");
             scanf("%d",&opcao);
 
+            int numeroDeParticao = 0;
             switch (opcao)
             {
             case 1:
@@ -280,19 +279,20 @@ int main()
                 break;
 
             case 9:
-
-                /*-----------------------------------PARTIÇÔES----------------------*/
-                gerarParticoesOrdenadas("ingresso.dat");
-                printf("\nParticoes realizadas com sucesso.\n");
-
+                /*
+                                int numberOfPartition = 1;
+                numeroDeParticao += naturalSelection(out,"naturalSelectionPartition");
+                binaryTreeOfWinners(numeroDeParticao, "naturalSelectionPartition");
+                FILE *fileBinaryOfTreeSorted = fopen("binaryOfTreeFileSorted.dat","rb+");
+                printPartitionEmployeeID(fileBinaryOfTreeSorted, "binaryOfTreeFileSorted.dat");
+                fclose(fileBinaryOfTreeSorted);
+                */
+                // int numberOfPartition = 0;
+                numeroDeParticao = substitutionSelection(out, "substitutionSelectionPartition");
+                mergeSort(numeroDeParticao, "substitutionSelectionPartition");
                 break;
             case 10:
-                /*-----------------------------------INTERCALAÇOES----------------------*/
-                intercalacao_otima();
-                printf("\nIntercalacao otima realizada com sucesso.\n");
-                break;
-            case 11:
-                menu = 10;
+                menu = 9;
                 break;
             default:
                 printf("Opcao invalida. Tente novamente.\n");

@@ -1,6 +1,5 @@
 #ifndef CLIENTE_H_INCLUDED
 #define CLIENTE_H_INCLUDED
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -15,6 +14,10 @@ typedef struct Cliente
   char data_nasc[11];
 } TCliente;
 
+struct KeyID {
+    int id;
+    long RRN;
+};
 
 //Imprime cliente
 void imprime_cliente(TCliente *cliente);

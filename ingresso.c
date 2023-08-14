@@ -1,11 +1,8 @@
-#include "ingresso.h"
-#include "particoes.c"
-#include "pilha.c"
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
-#include <dirent.h>
+#include "ingresso.h"
 
 //Imprime ingresso
 void imprime(TIng *ing)
@@ -87,7 +84,24 @@ void imprime_arquivo(FILE *arq)
     }
 }
 
-//Método que retorna o tamanho de ingresso em bytes
+
+void printPartitionEmployeeID(FILE *file, char partitionName[])
+{
+
+    printf("\nIDs Ingressos of partition %s: \n --->  ", partitionName);
+
+    for (int i = 0; i < sizeFile(file, 0); ++i)
+    {
+
+        fseek(file, i * sizeof(TIng), SEEK_SET);
+        TIng *aux = readRegisterIngresso(file);
+
+        printf(" %i ", aux->cod);
+    }
+
+    printf("\n");
+}
+
 int tamanho()
 {
     return sizeof(int)         // codigo
@@ -102,6 +116,27 @@ int tamanho_arquivo(FILE *arq)
     fseek(arq, 0, SEEK_END);
     int tam = round((double)ftell(arq) / tamanho());
     return tam;
+}
+int sizeFile(FILE *file, int contSizeFile)
+{
+
+    int bytesAUX = 0;
+
+    while(!feof(file))
+    {
+
+        fseek(file, bytesAUX * sizeof(TIng), SEEK_SET);
+
+        TIng *aux = readRegisterIngresso(file);
+        if(aux != NULL)
+        {
+            contSizeFile++;
+        }
+
+        bytesAUX++;
+    }
+
+    return contSizeFile;
 }
 
 TIng *buscaSequencial(int id, FILE *out, int *comparacao)
@@ -211,155 +246,561 @@ TIng *busca_binaria(int chave, FILE *in, int inicio, int fim)
     else return NULL;
 }
 
-//-----------------------------PARTIÇÔES--------------------------------------------
-
-#define TAM_MAX 100
-#define F 49 // Defina o número máximo de partições aqui
-
-// Função de comparação para o qsort
-int compare(const void *a, const void *b)
+TIng *readRegisterIngresso(FILE *out)
 {
-    return ((TIng *)a)->cod - ((TIng *)b)->cod;
-}
+    TIng *ing = (TIng*) malloc (sizeof(TIng));
 
-// Função para ler um ingresso do arquivo
-int lerIngresso(FILE *arquivo, TIng *ingresso)
-{
-    return fread(ingresso, sizeof(TIng), 1, arquivo);
-}
-
-// Função para escrever um ingresso no arquivo
-void escreverIngresso(FILE *arquivo, TIng *ingresso)
-{
-    fwrite(ingresso, sizeof(TIng), 1, arquivo);
-}
-
-// Função para gerar partições ordenadas por seleção por substituição
-void gerarParticoesOrdenadas(const char *nomeArquivo)
-{
-    FILE *arquivo = fopen(nomeArquivo, "rb");
-
-    if (arquivo == NULL)
+    if ( 0 >= fread(&ing->cod, sizeof(int), 1, out))
     {
-        perror("Erro ao abrir o arquivo");
-        exit(1);
+        free(ing);
+        return NULL;
     }
 
-    int numParticao = 0;
-    TIng buffer[TAM_MAX];
-    int tamBuffer = 0;
+    fwrite(&ing->cod, sizeof(int), 1, out);
+    fwrite(ing->nome, sizeof(char), sizeof(ing->nome), out);
+    fwrite(ing->show, sizeof(char), sizeof(ing->show), out);
+    fwrite(ing->data_show, sizeof(char), sizeof(ing->data_show), out);
+    fwrite(&ing->preco, sizeof(double), 1, out);
 
-    while (1)
-    {
-        int lidos = lerIngresso(arquivo, &buffer[tamBuffer]);
-        if (lidos == 0)
-        {
-            if (tamBuffer > 0)
-            {
-                // Ordenar e escrever a partição final
-                qsort(buffer, tamBuffer, sizeof(TIng), compare);
+    return ing;
+}
 
-                char nomeParticao[20];
-                snprintf(nomeParticao, sizeof(nomeParticao), "particao%d.dat", numParticao);
 
-                FILE *particao = fopen(nomeParticao, "wb");
-                for (int i = 0; i < tamBuffer; i++)
-                {
-                    escreverIngresso(particao, &buffer[i]);
+void saveRegisterIngresso(TIng *ing, FILE *out)
+{
+    fwrite(&ing->cod, sizeof(int), 1, out);
+    fwrite(ing->nome, sizeof(char), sizeof(ing->nome), out);
+    fwrite(ing->show, sizeof(char), sizeof(ing->show), out);
+    fwrite(ing->data_show, sizeof(char), sizeof(ing->data_show), out);
+    fwrite(&ing->preco, sizeof(double), 1, out);
+}
+
+int naturalSelection(FILE *file, char nameFilePartition[]) {
+
+    int  sizeFileAux = sizeFile(file, 0), position = 0, numberOfPartition = 0, smallElement = 999999999, smallElementPosition = 0, sizeReservoir = 0, flag = 0;
+
+    struct Ingresso ingresso[6];
+
+    int auxIngVet[6] = {0, 0, 0, 0, 0, 0};
+
+    rewind(file);
+
+    printf("\nPerforming substitution selection...");
+
+    while (!feof(file)) {
+
+        FILE *fileReservoir = fopen("reservoir.dat", "wb+");
+
+        char partitionName[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        itoa(numberOfPartition, str1, 10);
+        strcat(strcpy(partitionName, nameFilePartition), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName, "wb+");
+
+        if (flag == 0) {
+            for (int i = 0; i < 6; ++i) {
+
+                TIng *auxIng = readRegisterIngresso(file);
+                position++;
+
+                ingresso[i] = *auxIng;
+                auxIngVet[i] = auxIng->cod;
+            }
+        }
+
+        while (!feof(file)) {
+
+            for (int i = 0; i < 6; ++i) {
+
+                if (auxIngVet[i] < smallElement) {
+                    smallElement = auxIngVet[i];
+                    smallElementPosition = i;
                 }
-                fclose(particao);
-
-                numParticao++;
             }
-            break; // Fim do arquivo
+
+            TIng *auxIng = readRegisterIngresso(file);
+            position++;
+
+
+            if (auxIng->cod < ingresso[smallElementPosition].cod) {
+                saveRegisterIngresso(auxIng, fileReservoir);
+                sizeReservoir++;
+
+                if (sizeReservoir == 6) {
+
+                    break;
+                }
+
+            } else {
+                saveRegisterIngresso(&ingresso[smallElementPosition], filePartition);
+                auxIngVet[smallElementPosition] = auxIng->cod;
+                ingresso[smallElementPosition] = *auxIng;
+            }
+
+            smallElement = 999999999;
+
+            if (position >= sizeFileAux) {
+                break;
+            }
+
         }
 
-        tamBuffer++;
-        if (tamBuffer == TAM_MAX)
-        {
-            // Ordenar e escrever a partição atual
-            qsort(buffer, tamBuffer, sizeof(TIng), compare);
+        struct Ingresso aux;
 
-            char nomeParticao[20];
-            snprintf(nomeParticao, sizeof(nomeParticao), "particao%d.dat", numParticao);
+        int k, j;
 
-            FILE *particao = fopen(nomeParticao, "wb");
-            for (int i = 0; i < tamBuffer; i++)
-            {
-                escreverIngresso(particao, &buffer[i]);
+        for (k = 1; k < 6; k++) {
+
+            for (j = 0; j < 6 - 1; j++) {
+
+                if (ingresso[j].cod > ingresso[j + 1].cod) {
+                    aux = ingresso[j];
+                    ingresso[j] = ingresso[j + 1];
+                    ingresso[j + 1] = aux;
+                }
             }
-            fclose(particao);
-
-            numParticao++;
-            tamBuffer = 0;
         }
+
+        for (int i = 0; i < 6; ++i) {
+            saveRegisterIngresso(&ingresso[i], filePartition);
+        }
+
+        rewind(fileReservoir);
+
+        for (int i = 0; i < sizeReservoir; ++i) {
+            TIng *auxIngReservoir = readRegisterIngresso(fileReservoir);
+            ingresso[i] = *auxIngReservoir;
+            auxIngVet[i] = auxIngReservoir->cod;
+            flag = 1;
+        }
+
+
+        fclose(fileReservoir);
+        fclose(filePartition);
+
+        if (position >= sizeFileAux) {
+            break;
+        }
+
+        sizeReservoir = 0;
+        numberOfPartition++;
+
     }
 
-    fclose(arquivo);
+    for (int i = 0; i <= numberOfPartition; ++i) {
+
+        char partitionName[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        itoa(i, str1, 10);
+        strcat(strcpy(partitionName, nameFilePartition), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName, "rb+");
+
+        printPartitionEmployeeID(filePartition, partitionName);
+
+        fclose(filePartition);
+    }
+
+    return numberOfPartition;
 }
 
-void intercalacao_otima() {
-    FILE *particoes[F];
-    char nomeParticao[F][20];
-    TIng buffer[F][TAM_MAX];
-    int tamBuffer[F] = {0};
+void treeWinner(TIng **ing, FILE *file, int sizeInTreeOfWinners, int *auxTreeWinner)
+{
 
-    // Abrir as partições iniciais
-    for (int i = 0; i < F; i++) {
-        snprintf(nomeParticao[i], sizeof(nomeParticao[i]), "particao%d.dat", i);
-        particoes[i] = fopen(nomeParticao[i], "rb");
-        if (particoes[i] == NULL) {
-            perror("Erro ao abrir partição");
-            exit(1);
+    int aux;
+
+    for (int i = sizeInTreeOfWinners - 1; i > 0; i--)
+    {
+
+        if (i % 2 != 0 && i == sizeInTreeOfWinners - 1)
+        {
+            aux = (i - 1) / 2;
+            *ing[aux] = *ing[i];
         }
-
-        tamBuffer[i] = fread(buffer[i], sizeof(TIng), TAM_MAX, particoes[i]);
-        qsort(buffer[i], tamBuffer[i], sizeof(TIng), compare);
-    }
-
-    char nomeSaida[] = "saida.dat";
-    FILE *saida = fopen(nomeSaida, "wb");
-    if (saida == NULL) {
-        perror("Erro ao criar arquivo de saída");
-        exit(1);
-    }
-
-    int numParticao = F;
-
-    while (numParticao > 0) {
-        TIng menorValor = buffer[0][0];
-        int indiceMenor = 0;
-
-        for (int i = 1; i < F; i++) {
-            if (tamBuffer[i] > 0 && compare(&buffer[i][0], &menorValor) < 0) {
-                menorValor = buffer[i][0];
-                indiceMenor = i;
+        else
+        {
+            if (i % 2 == 0 && ing[i]->cod < ing[i-1]->cod)
+            {
+                aux = (i - 2) / 2;
+                *ing[aux] = *ing[i];
             }
-        }
-
-        int numEscritos = fwrite(&menorValor, sizeof(TIng), 1, saida);
-        if (numEscritos < 1) {
-            perror("Erro ao escrever arquivo de saída");
-            exit(1);
-        }
-
-        tamBuffer[indiceMenor]--;
-        memmove(&buffer[indiceMenor][0], &buffer[indiceMenor][1], tamBuffer[indiceMenor] * sizeof(TIng));
-
-        if (tamBuffer[indiceMenor] == 0) {
-            fclose(particoes[indiceMenor]);
-            numParticao--;
-            for (int j = indiceMenor; j < F - 1; j++) {
-                particoes[j] = particoes[j + 1];
-                memcpy(buffer[j], buffer[j + 1], TAM_MAX * sizeof(TIng));
-                tamBuffer[j] = tamBuffer[j + 1];
+            else if (i % 2 == 0 && ing[i-1]->cod < ing[i]->cod)
+            {
+                aux = (i - 2) / 2;
+                *ing[aux] = *ing[i - 1];
             }
         }
     }
 
-    fclose(saida);
+    saveRegisterIngresso(ing[0], file);
+    *auxTreeWinner +=1;
+}
 
-    for (int i = 0; i < F; i++) {
-        remove(nomeParticao[i]);
+void binaryTreeOfWinners(int numberOfPartition, char nameFilePartition[])
+{
+    int auxNumberOfPartition = numberOfPartition, flagAuxFinal = 0, auxTreeWinner = 0, sizeInTreeOfWinners;
+
+    if (numberOfPartition % 2 == 0)
+    {
+        sizeInTreeOfWinners = 2 * numberOfPartition - 1;
+        auxNumberOfPartition--;
     }
+    else
+    {
+        sizeInTreeOfWinners = 2 * numberOfPartition;
+    }
+
+    int aux = sizeInTreeOfWinners - 1;
+
+    TVet *listFile = calloc(sizeof(*listFile), numberOfPartition);
+    TIng *smallElement = calloc(sizeof(*smallElement), 1);
+    TIng **ingAux = calloc(sizeof(**ingAux), sizeInTreeOfWinners);
+    for (int i = 0; i < auxNumberOfPartition; i++) ingAux[i] = calloc(sizeof(TIng), 1);
+
+    FILE *fileBinaryOfTreeSorted = fopen("binaryOfTreeFileSorted.dat", "wb+");
+    printf("teste2_interno");
+    for (int i = 0; i < numberOfPartition; i++)
+    {
+        listFile[i].init_p = 0;
+
+        char partitionName[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        itoa(i, str1, 10);
+        strcat(strcpy(partitionName, nameFilePartition), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        listFile[i].f = fopen (partitionName, "rb+");
+        fseek(listFile[i].f, 0 * sizeof(TIng), SEEK_SET);
+
+        if (aux+1 >= numberOfPartition)
+        {
+            ingAux[aux] = readRegisterIngresso(listFile[i].f);
+            aux--;
+        }
+        listFile[i].end_p = 0;
+    }
+
+    treeWinner(ingAux, fileBinaryOfTreeSorted, sizeInTreeOfWinners, &auxTreeWinner);
+
+    while (flagAuxFinal < numberOfPartition)
+    {
+        aux = sizeInTreeOfWinners - 1;
+
+        for (int i = 0; i < numberOfPartition; i++)
+        {
+
+            if (fgetc(listFile[i].f) == EOF && listFile[i].end_p == 0 && smallElement->cod == ingAux[aux]->cod)
+            {
+                flagAuxFinal++;
+                listFile[i].end_p = 1;
+                i--;
+
+                if (flagAuxFinal == numberOfPartition)
+                {
+                    break;
+                }
+
+                for (int j = 0; j < sizeInTreeOfWinners; j++)
+                {
+                    if (ingAux[j]->cod == smallElement->cod) ingAux[j]->cod = 15000;
+                }
+
+                treeWinner(ingAux, fileBinaryOfTreeSorted, sizeInTreeOfWinners, &auxTreeWinner);
+            }
+            else
+            {
+                *smallElement = *ingAux[0];
+
+                if (smallElement->cod == ingAux[aux]->cod && listFile[i].end_p == 0)
+                {
+                    listFile[i].init_p += 1;
+
+                    if (fgetc(listFile[i].f) != EOF)
+                    {
+                        fseek (listFile[i].f, listFile[i].init_p * sizeof(TIng), SEEK_SET);
+                        free(ingAux[aux]);
+                        ingAux[aux] = readRegisterIngresso(listFile[i].f);
+                        treeWinner(ingAux, fileBinaryOfTreeSorted, sizeInTreeOfWinners, &auxTreeWinner);
+                    }
+                }
+                aux--;
+            }
+        }
+    }
+
+    for (int i = 0; i < numberOfPartition; i++)
+    {
+        fclose(listFile[i].f);
+    }
+
+    for (int i = 0; i < sizeInTreeOfWinners; i++)
+    {
+        free(ingAux[i]);
+    }
+
+    printf("Rodou.\n");
+    free(ingAux);
+    free(smallElement);
+    free(listFile);
+    fclose(fileBinaryOfTreeSorted);
+
+}
+
+//substituição
+
+int allVetFrozen (int vet[6]) {
+
+    int cont = 0;
+
+    for (int i = 0; i < 6; ++i) {
+        if (vet[i] == 1) {
+            cont++;
+        }
+    }
+
+    if (cont == 6) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int substitutionSelection (FILE *file, char nameFilePartition[]) {
+
+    int numberOfPartition = 0, contSizeFile = 0, position = 6, smallElementPosition = 0, smallElement = 999999, sizeFileAux = 0, selectedPosition = 0;
+    struct Ingresso ingresso[6];
+    int auxVetIng [6] = {0, 0, 0, 0, 0, 0};
+
+    rewind(file);
+
+    sizeFileAux = sizeFile(file, contSizeFile);
+
+
+    printf("\nPerforming substitution selection...");
+
+    for (int i = 0; i < 6; ++i) {
+        fseek(file, i * sizeof(TIng), SEEK_SET);
+
+        TIng *aux = readRegisterIngresso(file);
+        ingresso[i] = *aux;
+
+    }
+
+    for (int i = 0; i < 6; ++i) {
+        auxVetIng[i] = ingresso[i].cod;
+    }
+
+    while (position != sizeFileAux) {
+
+        char partitionName[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        itoa(numberOfPartition, str1, 10);
+        strcat(strcpy(partitionName, nameFilePartition), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName, "wb+");
+
+        int auxVetFrozen[6] = {0, 0, 0, 0, 0, 0,};
+
+        while (position != sizeFileAux) {
+
+            smallElement = 9999999;
+
+            for (int i = 0; i < 6; ++i) {
+
+                if (smallElement > auxVetIng[i] && auxVetFrozen[i] != 1) {
+                    smallElement = auxVetIng[i];
+                    smallElementPosition = i;
+                }
+            }
+
+            saveRegisterIngresso(&ingresso[smallElementPosition], filePartition);
+
+            fseek(file, position * sizeof(TIng), SEEK_SET);
+
+            TIng *aux = readRegisterIngresso(file);
+
+            position++;
+
+            auxVetIng[smallElementPosition] = aux->cod;
+            ingresso[smallElementPosition] = *aux;
+
+            if (aux->cod < smallElement) {
+                auxVetFrozen[smallElementPosition] = 1;
+            }
+
+            if(allVetFrozen(auxVetFrozen) == 1) {
+                numberOfPartition++;
+                break;
+            }
+
+        }
+
+        fclose(filePartition);
+
+        if (position >= sizeFileAux) {
+            break;
+        }
+
+    }
+
+    char partitionName[100];
+    char str1[100];
+    char str2[100] = ".dat";
+
+    itoa(numberOfPartition, str1, 10);
+    strcat(strcpy(partitionName, nameFilePartition), str1);
+    strcat(strcpy(partitionName, partitionName), str2);
+
+    FILE *filePartitionFinal = fopen(partitionName, "ab+");
+
+    int k, j;
+
+    struct Ingresso ingAux;
+
+    for (k = 1; k < 6; k++) {
+
+        for (j = 0; j < 6 - 1; j++) {
+
+            if (ingresso[j].cod > ingresso[j + 1].cod) {
+                ingAux = ingresso[j];
+                ingresso[j] = ingresso[j + 1];
+                ingresso[j + 1] = ingAux;
+            }
+        }
+    }
+
+    for (int i = 0; i < 6; ++i) {
+        saveRegisterIngresso(&ingresso[i], filePartitionFinal);
+    }
+
+    fclose(filePartitionFinal);
+
+    for (int i = 0; i <= numberOfPartition; ++i) {
+
+
+        itoa(i, str1, 10);
+        strcat(strcpy(partitionName, nameFilePartition), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName, "rb+");
+
+        printPartitionEmployeeID(filePartition, partitionName);
+
+        fclose(filePartition);
+    }
+
+    return numberOfPartition;
+}
+
+void mergeSort(int numberOfPartition, char nameFilePartition[]) {
+
+    int *vetSizePartition = (int *) malloc(numberOfPartition * sizeof(int));
+    int *vetFinalPartition = (int *) malloc(numberOfPartition * sizeof(int));
+    int *vetPositionPartition = (int *) malloc(numberOfPartition * sizeof(int));
+    int *vetValueEmployeePartition = (int *) malloc(numberOfPartition * sizeof(int));
+    int flagAuxFinal = 0, count, smallElement = INT_MAX, smallElementPosition = 0;
+
+    FILE *auxFileFinal = fopen("mergeSortFileSorted.dat", "wb+");
+
+    for (int i = 0; i <= numberOfPartition; ++i) {
+
+        char partitionName[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        itoa(i, str1, 10);
+        strcat(strcpy(partitionName, nameFilePartition), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName, "rb+");
+
+        rewind(filePartition);
+
+        vetSizePartition[i] = sizeFile(filePartition, 0);
+        vetFinalPartition[i] = 0;
+        vetPositionPartition[i] = 0;
+
+        fseek(filePartition, vetPositionPartition[i] * sizeof(TIng), SEEK_SET);
+        TIng *auxIng = readRegisterIngresso(filePartition);
+
+        vetValueEmployeePartition[i] = auxIng->cod;
+
+        fclose(filePartition);
+    }
+
+
+    while (flagAuxFinal != 1) {
+
+        count = 0;
+
+        for (int i = 0; i <= numberOfPartition; ++i) {
+
+            if (vetFinalPartition[i] == 1) {
+                count++;
+            }
+
+            if (count == numberOfPartition) {
+                flagAuxFinal = 1;
+            }
+        }
+
+        for (int i = 0; i <= numberOfPartition; ++i) {
+
+            if (vetValueEmployeePartition[i] < smallElement && vetFinalPartition[i] != 1) {
+                smallElement = vetValueEmployeePartition[i];
+                smallElementPosition = i;
+            }
+        }
+
+        char partitionName[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        itoa(smallElementPosition, str1, 10);
+        strcat(strcpy(partitionName, nameFilePartition), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName, "rb+");
+
+        rewind(filePartition);
+        fseek(filePartition, vetPositionPartition[smallElementPosition] * sizeof(TIng), SEEK_SET);
+        TIng *auxIng = readRegisterIngresso(filePartition);
+        saveRegisterIngresso(auxIng, auxFileFinal);
+        vetPositionPartition[smallElementPosition]++;
+
+        rewind(filePartition);
+
+        if (vetPositionPartition[smallElementPosition] >= vetSizePartition[smallElementPosition]) {
+            vetFinalPartition[smallElementPosition] = 1;
+        } else {
+            fseek(filePartition, vetPositionPartition[smallElementPosition] * sizeof(TIng), SEEK_SET);
+            TIng *auxIng2 = readRegisterIngresso(filePartition);
+            vetValueEmployeePartition[smallElementPosition] = auxIng2->cod;
+        }
+
+        fclose(filePartition);
+
+        smallElement = INT_MAX;
+
+    }
+
+    printPartitionEmployeeID(auxFileFinal, "mergeSortFileSorted.dat");
+
+    fclose(auxFileFinal);
+    free(vetFinalPartition);
+    free(vetSizePartition);
+    free(vetPositionPartition);
+    free(vetValueEmployeePartition);
 }
