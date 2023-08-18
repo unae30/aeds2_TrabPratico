@@ -85,10 +85,10 @@ void imprime_arquivo(FILE *arq)
 }
 
 
-void printPartitionEmployeeID(FILE *file, char partitionName[])
+void printPartitionEmployeeID(FILE *file, char nomeDaParticao[])
 {
 
-    printf("\nIDs Ingressos of partition %s: \n --->  ", partitionName);
+    printf("\nIDs Ingressos of partition %s: \n --->  ", nomeDaParticao);
 
     for (int i = 0; i < sizeFile(file, 0); ++i)
     {
@@ -117,7 +117,7 @@ int tamanho_arquivo(FILE *arq)
     int tam = round((double)ftell(arq) / tamanho());
     return tam;
 }
-int sizeFile(FILE *file, int contSizeFile)
+int sizeFile(FILE *file, int contTamanhoArquivo)
 {
 
     int bytesAUX = 0;
@@ -130,28 +130,28 @@ int sizeFile(FILE *file, int contSizeFile)
         TIng *aux = readRegisterIngresso(file);
         if(aux != NULL)
         {
-            contSizeFile++;
+            contTamanhoArquivo++;
         }
 
         bytesAUX++;
     }
 
-    return contSizeFile;
+    return contTamanhoArquivo;
 }
 
 TIng *buscaSequencial(int id, FILE *out, int *comparacao)
 {
-    int position = 0;
+    int posicao = 0;
 
     rewind(out);
 
     while (!feof(out))
     {
 
-        fseek(out, position * sizeof(TIng), SEEK_SET);
+        fseek(out, posicao * sizeof(TIng), SEEK_SET);
         TIng *ing = le(out);
 
-        position++;
+        posicao++;
 
         if (ing == NULL)
         {
@@ -277,7 +277,7 @@ void saveRegisterIngresso(TIng *ing, FILE *out)
 
 //substituição
 
-int allVetFrozen (int vet[6]) {
+int todoVetCongelado (int vet[6]) {
 
     int cont = 0;
 
@@ -294,96 +294,102 @@ int allVetFrozen (int vet[6]) {
     }
 }
 
-int substitutionSelection (FILE *file, char nameFilePartition[]) {
+int substituicaoPorSelecao (FILE *file, char nomeDaParticaoFinal[]) {
 
-    int numberOfPartition = 0, contSizeFile = 0, position = 6, smallElementPosition = 0, smallElement = 999999, sizeFileAux = 0, selectedPosition = 0;
+    int numeroDeParticao = 0, contTamanhoArquivo = 0, posicao = 6, posicaoMenorElemento = 0, menorElemento = 999999, tamArquivoAux = 0, posicaoSelecionada = 0;
     struct Ingresso ingresso[6];
     int auxVetIng [6] = {0, 0, 0, 0, 0, 0};
 
     rewind(file);
 
-    sizeFileAux = sizeFile(file, contSizeFile);
+    tamArquivoAux = sizeFile(file, contTamanhoArquivo);
 
 
-    printf("\nPerforming substitution selection...");
+    printf("\nExecutando selecao por substituicao...");
 
     for (int i = 0; i < 6; ++i) {
         fseek(file, i * sizeof(TIng), SEEK_SET);
-
+        //Ler 6 registros do arquivo para a memória
         TIng *aux = readRegisterIngresso(file);
         ingresso[i] = *aux;
 
     }
 
     for (int i = 0; i < 6; ++i) {
+        //para a memória
         auxVetIng[i] = ingresso[i].cod;
     }
 
-    while (position != sizeFileAux) {
+    while (posicao != tamArquivoAux) {
 
-        char partitionName[100];
+        char nomeDaParticao[100];
         char str1[100];
         char str2[100] = ".dat";
 
-        itoa(numberOfPartition, str1, 10);
-        strcat(strcpy(partitionName, nameFilePartition), str1);
-        strcat(strcpy(partitionName, partitionName), str2);
+        itoa(numeroDeParticao, str1, 10);
+        strcat(strcpy(nomeDaParticao, nomeDaParticaoFinal), str1);
+        strcat(strcpy(nomeDaParticao, nomeDaParticao), str2);
 
-        FILE *filePartition = fopen(partitionName, "wb+");
+        FILE *particaoDoArquivo = fopen(nomeDaParticao, "wb+");
 
-        int auxVetFrozen[6] = {0, 0, 0, 0, 0, 0,};
+        int VetCongeladoAuxiliar[6] = {0, 0, 0, 0, 0, 0,};
 
-        while (position != sizeFileAux) {
+        while (posicao != tamArquivoAux) {
 
-            smallElement = 9999999;
+            menorElemento = 9999999;
 
             for (int i = 0; i < 6; ++i) {
 
-                if (smallElement > auxVetIng[i] && auxVetFrozen[i] != 1) {
-                    smallElement = auxVetIng[i];
-                    smallElementPosition = i;
+                if (menorElemento > auxVetIng[i] && VetCongeladoAuxiliar[i] != 1) {
+                    //Selecionar, no array em memória, o registro r com menor chave
+                    menorElemento = auxVetIng[i];
+                    posicaoMenorElemento = i;
                 }
             }
+            //Gravar o registro r na partição de saída
+            saveRegisterIngresso(&ingresso[posicaoMenorElemento], particaoDoArquivo);
 
-            saveRegisterIngresso(&ingresso[smallElementPosition], filePartition);
-
-            fseek(file, position * sizeof(TIng), SEEK_SET);
+            fseek(file, posicao * sizeof(TIng), SEEK_SET);
 
             TIng *aux = readRegisterIngresso(file);
 
-            position++;
+            posicao++;
+            //Substituir, no array em memória, o registro r pelo próximo registro do arquivo de entrada
+            auxVetIng[posicaoMenorElemento] = aux->cod;
+            ingresso[posicaoMenorElemento] = *aux;
 
-            auxVetIng[smallElementPosition] = aux->cod;
-            ingresso[smallElementPosition] = *aux;
-
-            if (aux->cod < smallElement) {
-                auxVetFrozen[smallElementPosition] = 1;
+            //Caso a chave deste último seja menor do que a chave recém gravada,
+            //considerá-lo congelado e ignorá-lo no restante do processamento
+            if (aux->cod < menorElemento) {
+                VetCongeladoAuxiliar[posicaoMenorElemento] = 1;
             }
 
-            if(allVetFrozen(auxVetFrozen) == 1) {
-                numberOfPartition++;
+            if(todoVetCongelado(VetCongeladoAuxiliar) == 1) {
+                numeroDeParticao++;
                 break;
             }
 
         }
 
-        fclose(filePartition);
+        //fechar a partição de saída
+        fclose(particaoDoArquivo);
 
-        if (position >= sizeFileAux) {
+        if (posicao >= tamArquivoAux) {
             break;
         }
 
     }
 
-    char partitionName[100];
+    char nomeDaParticao[100];
     char str1[100];
     char str2[100] = ".dat";
 
-    itoa(numberOfPartition, str1, 10);
-    strcat(strcpy(partitionName, nameFilePartition), str1);
-    strcat(strcpy(partitionName, partitionName), str2);
+    itoa(numeroDeParticao, str1, 10);
+    strcat(strcpy(nomeDaParticao, nomeDaParticaoFinal), str1);
+    strcat(strcpy(nomeDaParticao, nomeDaParticao), str2);
 
-    FILE *filePartitionFinal = fopen(partitionName, "ab+");
+    //abrir nova particao de saida
+    FILE *ParticaoFinalDoArquivo = fopen(nomeDaParticao, "ab+");
 
     int k, j;
 
@@ -400,64 +406,65 @@ int substitutionSelection (FILE *file, char nameFilePartition[]) {
             }
         }
     }
-
+    //grava a ultima particao
     for (int i = 0; i < 6; ++i) {
-        saveRegisterIngresso(&ingresso[i], filePartitionFinal);
+        saveRegisterIngresso(&ingresso[i], ParticaoFinalDoArquivo);
     }
+    //fechar a particao de saida
+    fclose(ParticaoFinalDoArquivo);
 
-    fclose(filePartitionFinal);
-
-    for (int i = 0; i <= numberOfPartition; ++i) {
+    //gerando os arquivos
+    for (int i = 0; i <= numeroDeParticao; ++i) {
 
 
         itoa(i, str1, 10);
-        strcat(strcpy(partitionName, nameFilePartition), str1);
-        strcat(strcpy(partitionName, partitionName), str2);
+        strcat(strcpy(nomeDaParticao, nomeDaParticaoFinal), str1);
+        strcat(strcpy(nomeDaParticao, nomeDaParticao), str2);
 
-        FILE *filePartition = fopen(partitionName, "rb+");
+        FILE *particaoDoArquivo = fopen(nomeDaParticao, "rb+");
 
-        printPartitionEmployeeID(filePartition, partitionName);
+        printPartitionEmployeeID(particaoDoArquivo, nomeDaParticao);
 
-        fclose(filePartition);
+        fclose(particaoDoArquivo);
     }
 
-    return numberOfPartition;
+    return numeroDeParticao;
 }
 
-void mergeSort(int numberOfPartition, char nameFilePartition[]) {
+void IntercalacaoOtima(int numeroDeParticao, char nomeDaParticaoFinal[]) {
 
-    int *vetSizePartition = (int *) malloc(numberOfPartition * sizeof(int));
-    int *vetFinalPartition = (int *) malloc(numberOfPartition * sizeof(int));
-    int *vetPositionPartition = (int *) malloc(numberOfPartition * sizeof(int));
-    int *vetValueEmployeePartition = (int *) malloc(numberOfPartition * sizeof(int));
-    int flagAuxFinal = 0, count, smallElement = INT_MAX, smallElementPosition = 0;
+    int *tamArqParticao = (int *) malloc(numeroDeParticao * sizeof(int));
+    int *VetParticaoFinal = (int *) malloc(numeroDeParticao * sizeof(int));
+    int *vetPosicaoParticao = (int *) malloc(numeroDeParticao * sizeof(int));
+    int *vetValorParticaoIngresso = (int *) malloc(numeroDeParticao * sizeof(int));
+    int flagAuxFinal = 0, count, menorElemento = INT_MAX, posicaoMenorElemento = 0;
 
-    FILE *auxFileFinal = fopen("mergeSortFileSorted.dat", "wb+");
+    FILE *ArquAuxFinal = fopen("intercalacaoOtima.dat", "wb+");
 
-    for (int i = 0; i <= numberOfPartition; ++i) {
+    for (int i = 0; i <= numeroDeParticao; ++i) {
 
-        char partitionName[100];
+        char nomeDaParticao[100];
         char str1[100];
         char str2[100] = ".dat";
 
         itoa(i, str1, 10);
-        strcat(strcpy(partitionName, nameFilePartition), str1);
-        strcat(strcpy(partitionName, partitionName), str2);
+        strcat(strcpy(nomeDaParticao, nomeDaParticaoFinal), str1);
+        strcat(strcpy(nomeDaParticao, nomeDaParticao), str2);
 
-        FILE *filePartition = fopen(partitionName, "rb+");
+        FILE *particaoDoArquivo = fopen(nomeDaParticao, "rb+");
 
-        rewind(filePartition);
+        rewind(particaoDoArquivo);
 
-        vetSizePartition[i] = sizeFile(filePartition, 0);
-        vetFinalPartition[i] = 0;
-        vetPositionPartition[i] = 0;
+        tamArqParticao[i] = sizeFile(particaoDoArquivo, 0);
+        VetParticaoFinal[i] = 0;
+        vetPosicaoParticao[i] = 0;
 
-        fseek(filePartition, vetPositionPartition[i] * sizeof(TIng), SEEK_SET);
-        TIng *auxIng = readRegisterIngresso(filePartition);
+        fseek(particaoDoArquivo, vetPosicaoParticao[i] * sizeof(TIng), SEEK_SET);
+        TIng *auxIng = readRegisterIngresso(particaoDoArquivo);
 
-        vetValueEmployeePartition[i] = auxIng->cod;
+        vetValorParticaoIngresso[i] = auxIng->cod;
 
-        fclose(filePartition);
+        fclose(particaoDoArquivo);
     }
 
 
@@ -465,62 +472,62 @@ void mergeSort(int numberOfPartition, char nameFilePartition[]) {
 
         count = 0;
 
-        for (int i = 0; i <= numberOfPartition; ++i) {
+        for (int i = 0; i <= numeroDeParticao; ++i) {
 
-            if (vetFinalPartition[i] == 1) {
+            if (VetParticaoFinal[i] == 1) {
                 count++;
             }
 
-            if (count == numberOfPartition) {
+            if (count == numeroDeParticao) {
                 flagAuxFinal = 1;
             }
         }
 
-        for (int i = 0; i <= numberOfPartition; ++i) {
+        for (int i = 0; i <= numeroDeParticao; ++i) {
 
-            if (vetValueEmployeePartition[i] < smallElement && vetFinalPartition[i] != 1) {
-                smallElement = vetValueEmployeePartition[i];
-                smallElementPosition = i;
+            if (vetValorParticaoIngresso[i] < menorElemento && VetParticaoFinal[i] != 1) {
+                menorElemento = vetValorParticaoIngresso[i];
+                posicaoMenorElemento = i;
             }
         }
 
-        char partitionName[100];
+        char nomeDaParticao[100];
         char str1[100];
         char str2[100] = ".dat";
 
-        itoa(smallElementPosition, str1, 10);
-        strcat(strcpy(partitionName, nameFilePartition), str1);
-        strcat(strcpy(partitionName, partitionName), str2);
+        itoa(posicaoMenorElemento, str1, 10);
+        strcat(strcpy(nomeDaParticao, nomeDaParticaoFinal), str1);
+        strcat(strcpy(nomeDaParticao, nomeDaParticao), str2);
 
-        FILE *filePartition = fopen(partitionName, "rb+");
+        FILE *particaoDoArquivo = fopen(nomeDaParticao, "rb+");
 
-        rewind(filePartition);
-        fseek(filePartition, vetPositionPartition[smallElementPosition] * sizeof(TIng), SEEK_SET);
-        TIng *auxIng = readRegisterIngresso(filePartition);
-        saveRegisterIngresso(auxIng, auxFileFinal);
-        vetPositionPartition[smallElementPosition]++;
+        rewind(particaoDoArquivo);
+        fseek(particaoDoArquivo, vetPosicaoParticao[posicaoMenorElemento] * sizeof(TIng), SEEK_SET);
+        TIng *auxIng = readRegisterIngresso(particaoDoArquivo);
+        saveRegisterIngresso(auxIng, ArquAuxFinal);
+        vetPosicaoParticao[posicaoMenorElemento]++;
 
-        rewind(filePartition);
+        rewind(particaoDoArquivo);
 
-        if (vetPositionPartition[smallElementPosition] >= vetSizePartition[smallElementPosition]) {
-            vetFinalPartition[smallElementPosition] = 1;
+        if (vetPosicaoParticao[posicaoMenorElemento] >= tamArqParticao[posicaoMenorElemento]) {
+            VetParticaoFinal[posicaoMenorElemento] = 1;
         } else {
-            fseek(filePartition, vetPositionPartition[smallElementPosition] * sizeof(TIng), SEEK_SET);
-            TIng *auxIng2 = readRegisterIngresso(filePartition);
-            vetValueEmployeePartition[smallElementPosition] = auxIng2->cod;
+            fseek(particaoDoArquivo, vetPosicaoParticao[posicaoMenorElemento] * sizeof(TIng), SEEK_SET);
+            TIng *auxIng2 = readRegisterIngresso(particaoDoArquivo);
+            vetValorParticaoIngresso[posicaoMenorElemento] = auxIng2->cod;
         }
 
-        fclose(filePartition);
+        fclose(particaoDoArquivo);
 
-        smallElement = INT_MAX;
+        menorElemento = INT_MAX;
 
     }
 
-    printPartitionEmployeeID(auxFileFinal, "mergeSortFileSorted.dat");
+    printPartitionEmployeeID(ArquAuxFinal, "intercalacaoOtima.dat");
 
-    fclose(auxFileFinal);
-    free(vetFinalPartition);
-    free(vetSizePartition);
-    free(vetPositionPartition);
-    free(vetValueEmployeePartition);
+    fclose(ArquAuxFinal);
+    free(VetParticaoFinal);
+    free(tamArqParticao);
+    free(vetPosicaoParticao);
+    free(vetValorParticaoIngresso);
 }

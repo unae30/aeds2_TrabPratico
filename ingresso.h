@@ -69,8 +69,8 @@ void escreverIngresso(FILE *arquivo, TIng *ingresso);
 void saveRegisterIngresso(TIng *ing, FILE *out);
 TIng *readRegisterIngresso(FILE *out);
 void printPartitionEmployeeID(FILE *file, char partitionName[]);
-void mergeSort(int numberOfPartition, char nameFilePartition[]);
-int substitutionSelection (FILE *file, char nameFilePartition[]);
-int allVetFrozen (int vet[]);
+void IntercalacaoOtima(int numeroDeParticao, char nomeDaParticaoFinal[]);
+int substituicaoPorSelecao (FILE *file, char nomeDaParticaoFinal[]);
+int todoVetCongelado (int vet[]);
 
 #endif // INGRESSO_H_INCLUDED

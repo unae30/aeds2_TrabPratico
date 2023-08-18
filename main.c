@@ -148,7 +148,7 @@ int main()
             printf("\n6 - Buscar algum cliente - busca sequencial");
             printf("\n7 - Inserction Sort cliente");
             printf("\n8 - Buscar algum cliente - busca binaria");
-            printf("\n9 - Selecao natural e arvore bin de 3 venc");
+            printf("\n9 - Selecao por Substituicao e Intercalacao otima");
             printf("\n10 - Sair do programa");
             printf("\n");
             printf("\nDigite a opcao:");
@@ -280,8 +280,8 @@ int main()
 
             case 9:
                 // int numberOfPartition = 0;
-                numeroDeParticao = substitutionSelection(out, "substitutionSelectionPartition");
-                mergeSort(numeroDeParticao, "substitutionSelectionPartition");
+                numeroDeParticao = substituicaoPorSelecao(out, "particaoSubstituicaoSelecao");
+                IntercalacaoOtima(numeroDeParticao, "particaoSubstituicaoSelecao");
                 break;
             case 10:
                 menu = 9;
